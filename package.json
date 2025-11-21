@@ -9,26 +9,26 @@
   },
   "license": "MIT",
   "type": "module",
-  "types": "./src/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
-      "default": "./src/index.d.ts" 
-    },
-    "./getOpenAPISchema": {
-      "default": "./src/getSchema.ts"
+      "default": "./src/index.ts"
     }
   },
   "scripts": {
     "fetch": "ts-node src/fetchSchema.ts",
-    "generate:schema": "npx openapi-typescript resources/openapi.yaml -o src/schema.d.ts --export-type",
-    "generate": "pnpm run fetch && pnpm run generate:schema"
+    "generate:schema": "npx openapi-typescript openapi.yaml -o src/schema.d.ts --export-type",
+    "generate:json": "ts-node src/convertYamlToJson.ts",
+    "generate": "pnpm run fetch && pnpm run generate:schema && pnpm run generate:json"
   },
   "dependencies": {
     "yaml": "^2.8.1"
   },
   "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^24",
+    "ajv": "^8.17.1",
+    "js-yaml": "^4.1.1",
     "openapi-typescript": "^7.8.0",
     "ts-node": "^10.9.2"
   },

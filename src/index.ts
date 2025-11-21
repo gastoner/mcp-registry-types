@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 // Re-export all types from schema.d.ts (auto-generated from OpenAPI spec)
-export * from './schema.d.ts'; 
+export type * from './schema'; 
 
 // Re-export OpenAPIDocument type and utilities
-export * from './openAPI.d.ts';
+export type * from './openAPI';
 
-// Re-export getOpenAPISchema function
-export { getOpenAPISchema } from './getSchema';
+
+export {validate} from './validate';
