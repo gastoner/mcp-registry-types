@@ -1,0 +1,77 @@
+name: npmjs publish
+
+on:
+  workflow_run:
+    workflows: ["release", "next build"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC
+
+jobs:
+  publish:
+    name: Publish to npmjs
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get latest release info
+        id: get_release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Determine which workflow triggered this
+          WORKFLOW_NAME="${{ github.event.workflow_run.name }}"
+          
+          if [[ "$WORKFLOW_NAME" == "release" ]]; then
+            NPM_TAG="latest"
+            # Get latest non-prerelease release
+            RELEASE_TAG=$(gh api repos/${{ github.repository }}/releases | jq -r 'map(select(.prerelease == false)) | first | .tag_name')
+          else
+            NPM_TAG="next"
+            # Get latest prerelease
+            RELEASE_TAG=$(gh api repos/${{ github.repository }}/releases | jq -r 'map(select(.prerelease == true)) | first | .tag_name')
+          fi
+          
+          echo "npm_tag=$NPM_TAG" >> ${GITHUB_OUTPUT}
+          echo "release_tag=$RELEASE_TAG" >> ${GITHUB_OUTPUT}
+          echo "Publishing tag: $RELEASE_TAG with npm tag: $NPM_TAG"
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ steps.get_release.outputs.release_tag }}
+
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        name: Install pnpm
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Execute pnpm
+        run: pnpm install
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          VERSION="${{ steps.get_release.outputs.release_tag }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> ${GITHUB_OUTPUT}
+
+      - name: Publish to npmjs
+        run: |
+          echo "Using version ${{ steps.get_version.outputs.version }}"
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.get_version.outputs.version }}\",#g" package.json
+          pnpm publish --provenance --tag ${{ steps.get_release.outputs.npm_tag }} --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
