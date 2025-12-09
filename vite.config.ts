@@ -29,7 +29,7 @@ export default defineConfig({
         index: resolve(__dirname, 'src/index.ts'),
         validate: resolve(__dirname, 'src/validate.ts'),
       },
-      formats: ['es']
+      formats: ['cjs']
     },
     outDir: 'dist',
     sourcemap: true,
