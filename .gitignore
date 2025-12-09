@@ -1,3 +1,4 @@
 node_modules
+dist
 openapi.yaml
 src/openapi.json

@@ -59,6 +59,12 @@ jobs:
       - name: Execute pnpm
         run: pnpm install
 
+      - name: Generate schema
+        run: pnpm run generate
+
+      - name: Build
+        run: pnpm build
+
       - name: Publish to npmjs
         run: |
           echo "Publishing version ${{ steps.version_info.outputs.version }} with npm tag: ${{ steps.version_info.outputs.npm_tag }}"
