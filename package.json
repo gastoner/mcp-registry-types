@@ -15,6 +15,7 @@
       "default": "./src/index.ts"
     }
   },
+  "files": ["openapi.yaml", "src/openapi.json"],
   "scripts": {
     "fetch": "ts-node src/fetch-schema.ts",
     "generate:schema": "npx openapi-typescript openapi.yaml -o src/schema.d.ts --export-type",
