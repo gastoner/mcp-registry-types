@@ -19,7 +19,9 @@
 import { Ajv, type ValidateFunction } from 'ajv';
 import openapiSchema from './openapi.json' with {type: 'json'};
 
-const ajv = new Ajv({strict: false});
+// https://ajv.js.org/options.html#allerrors
+// Check all rules collecting all errors. Default is to return after the first error.
+const ajv = new Ajv({strict: false, allErrors: true});
 
 // Pre-register all OpenAPI schemas once for $ref resolution
 for (const [schemaName, schema] of Object.entries(openapiSchema.components.schemas)) {
